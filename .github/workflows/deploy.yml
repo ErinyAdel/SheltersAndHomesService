@@ -1,0 +1,35 @@
+
+name: Build and Deploy .NET App
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build-and-deploy:
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check .NET version
+        run: dotnet --version
+        
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet build --configuration Release --no-restore
+
+      - name: Publish
+        run: dotnet publish -c Release -o "./published"
+
+      - name: Deploy to IIS
+        shell: powershell
+        run: |
+          $source = "$(pwd)\published"
+          $destination = "C:\Work\SoftwareDevelopment\Deployment\PublishedSheltersAndHomesService"
+          Copy-Item -Path "$source\*" -Destination $destination -Recurse -Force
+          Write-Host "Deployment is Completed (Without IIS Reset)"
